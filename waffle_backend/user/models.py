@@ -2,11 +2,7 @@ from django.db import models
 
 # Create your models here.
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin, UserManager
-from django.db.models.deletion import SET, SET_DEFAULT
-from django.db.models.fields import related
 from django.utils import timezone
-
-from django.contrib.auth.models import User
 
 
 class CustomUserManager(BaseUserManager):
@@ -31,7 +27,7 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
 
-        return  self._create_user(email, password, **extra_fields)  # TODO
+        return  # TODO (이 모델의 부모 클래스를 보고, 이 라인에 알맞은 코드를 작성해주세요.)
 
     def create_superuser(self, email, password, **extra_fields):
 
@@ -41,16 +37,7 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get('is_staff') is not True or extra_fields.get('is_superuser') is not True:
             raise ValueError('권한 설정이 잘못되었습니다.')
 
-        return  self._create_user(email, password, **extra_fields)  # TODO
-
-
-class ParticipantProfile(models.Model):
-    university = models.CharField(max_length=150, blank=True)
-    accepted = models.BooleanField(default=True)
-
-class InstructorProfile(models.Model):
-    company = models.CharField(max_length=150, blank=True)
-    year = models.IntegerField(null=True)
+        return  # TODO (이 모델의 부모 클래스를 보고, 이 라인에 알맞은 코드를 작성해주세요.)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -59,20 +46,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     #  기존 과제 0, 과제 1에서 사용하던 유저 정보를 모두 포함하고 있어야 합니다.
     #  1. 이제 이메일은 유저마다 고유한 식별자가 되어야 합니다. 필드 선언 시 적절한 옵션을 지정해주세요
     #  2. 위에 선언한 CustomManager를 이 모델의 매니저로 선언하여야 합니다.
-    email = models.EmailField(unique=True)
-    username = models.CharField(max_length=150)
-    first_name = models.CharField(max_length=150, blank=True)
-    last_name = models.CharField(max_length=150, blank=True)
-    date_joined = models.DateTimeField(auto_now_add=True, blank=True)
-    last_login = models.DateTimeField(auto_now=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
-
-    # profiles for each role
-    participant = models.OneToOneField(ParticipantProfile, related_name='user', null=True, default=None, on_delete=SET_DEFAULT)
-    instructor = models.OneToOneField(InstructorProfile, related_name='user', null=True, default=None, on_delete=SET_DEFAULT)
-
-    objects = CustomUserManager()
 
     # 해당 필드에 대한 설명은 부모 AbstractBaseUser 클래스 참고
     EMAIL_FIELD = 'email'
@@ -83,15 +56,3 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.email
-
-    @property
-    def is_participant(self):
-        if self.participant is None:
-            return False
-        return True
-    
-    @property
-    def is_instructor(self):
-        if self.instructor is None:
-            return False
-        return True

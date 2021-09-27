@@ -42,10 +42,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_jwt',
     'rest_framework.authtoken',
-    
-    'user.apps.UserConfig',
     'survey.apps.SurveyConfig',
-    'seminar.apps.SeminarConfig'
+    'user.apps.UserConfig'
 ]
 
 MIDDLEWARE = [
