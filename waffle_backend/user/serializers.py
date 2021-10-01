@@ -4,6 +4,7 @@ from django.core.validators import validate_email
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import update_last_login
+from django.db.utils import IntegrityError
 from rest_framework import serializers
 from rest_framework_jwt.settings import api_settings
 
@@ -119,6 +120,15 @@ class ParticipantProfileSerializer(serializers.ModelSerializer):
             result.append(ParticipantSeminarSerializer(table, context=self.context).data)
         return result
 
+    def validate_university(self, value):
+        return value or ""
+
+    def validate_accepted(self, value):
+        if value is None:
+            return True
+        else:
+            return value
+
 
 class InstructorProfileSerializer(serializers.ModelSerializer):
     charge = serializers.SerializerMethodField()
@@ -138,6 +148,12 @@ class InstructorProfileSerializer(serializers.ModelSerializer):
             return None
         return InstructorChargeSerializer(tables[0], context=self.context).data
 
+    def validate_company(self, value):
+        return value or ""
+
+    def validate_year(self, value):
+        return value or None
+
 
 class UserSerializer(serializers.ModelSerializer):
     participant = serializers.SerializerMethodField()
@@ -156,6 +172,7 @@ class UserSerializer(serializers.ModelSerializer):
             'password',
             'first_name',
             'last_name',
+            'last_login',
             'date_joined',
             'participant',
             'instructor',
@@ -178,8 +195,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
     def validate(self, data):
-        print("before validation", data, self.initial_data)
-
         first_name = data.get('first_name')
         last_name = data.get('last_name')
         if bool(first_name) ^ bool(last_name):
@@ -193,26 +208,13 @@ class UserSerializer(serializers.ModelSerializer):
         
         return data
 
-    def create(self, validated_data):
-        user = super().create(validated_data)
-        return user
-
     def update(self, user, validated_data):
-        print("after validation", validated_data)
-        university = validated_data.pop('university', None)
-        company = validated_data.pop('company', None)
-        year = validated_data.pop('year', None)
-
         if user.is_participant:
-            if university:
-                user.participant.university = university
-                user.participant.save()
+            serializer = ParticipantProfileSerializer(user.participant, data=validated_data)
         else:
-            if company:
-                user.instructor.company = company
-            if year:
-                user.instructor.year = year
-            user.instructor.save()
+            serializer = InstructorProfileSerializer(user.instructor, data=validated_data)
+        serializer.is_valid()
+        serializer.save()
         
         super().update(user, validated_data)
         return user

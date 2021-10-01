@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from rest_framework import serializers
+from rest_framework import serializers, status
 from .models import Seminar, UserSeminar
 
 class ParticipantSeminarSerializer(serializers.ModelSerializer):
@@ -149,18 +149,15 @@ class SeminarSerializer(serializers.ModelSerializer):
         name = data.get('name')
         capacity = data.get('capacity')
         count = data.get('count')
-        time = data.get('count')
 
         if self.context.get('action') == 'create':
-            for field in (name, capacity, count, time):
-                if field is None:
-                    raise ValidationError('입력되지 않은 정보가 있습니다.')
-            if not name:
-                raise ValidationError('세미나 이름은 빈칸일 수 없습니다.')
+            if name == "" or name is None:
+                raise ValidationError('세미나 이름이 입력되지 않았습니다.')
             if capacity < 0:
                 raise ValidationError('세미나 정원은 양의 정수여야 합니다.')
             if count < 0:
                 raise ValidationError('세미나 횟수는 양의 정수여야 합니다.')
+        
         elif self.context.get('action') == 'update':
             if capacity is not None and capacity < 0:
                 raise ValidationError('세미나 정원은 양의 정수여야 합니다.')
@@ -184,6 +181,26 @@ class SeminarSerializer(serializers.ModelSerializer):
             if table.user.is_participant:
                 result.append(SeminarParticipantSerializer(table).data)
         return result
+
+    def create(self, validated_data):
+        seminar = super().create(validated_data)
+        user = self.context.get('request').user
+        table = UserSeminar(user=user, seminar=seminar)
+        table.save()
+        return seminar
+
+    def execute_create(self):
+        user = self.context.get('request').user
+        if not user.is_instructor:
+            return status.HTTP_403_FORBIDDEN, '진행자만 세미나를 생성할 수 있습니다.'
+        
+        try:
+            self.is_valid(raise_exception=True)
+        except ValidationError:
+            raise
+        
+        self.save()
+        return status.HTTP_201_CREATED, self.data
 
 
 class SeminarListSerializer(serializers.ModelSerializer):
