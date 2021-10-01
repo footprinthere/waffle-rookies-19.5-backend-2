@@ -24,7 +24,8 @@ jobs:
           MYSQL_DATABASE: 'waffle_backend_2'
           MYSQL_USER: 'waffle-backend'
           MYSQL_PASSWORD: 'seminar'
-        ports: [3306:3306]
+        ports:
+          - 3306:3306
 
     steps:
     - uses: actions/checkout@v2
