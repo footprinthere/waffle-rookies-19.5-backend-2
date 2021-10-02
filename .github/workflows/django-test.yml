@@ -3,9 +3,9 @@ name: Django CI
 # action을 실행할 조건
 on:
   push:
-    branches: [ main ]
+    branches: [ test ]
   pull_request:
-    branches: [ main ]
+    branches: [ test ]
 
 jobs:
   test:
