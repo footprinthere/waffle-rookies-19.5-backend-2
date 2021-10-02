@@ -97,6 +97,22 @@ DATABASES = {
     }
 }
 
+# setting for github actions
+SYSTEM_ENV = os.environ.get('SYSTEM_ENV', None)
+if SYSTEM_ENV == 'GITHUB_WORKFLOW':
+    DEBUG = True
+    SECRET_KEY = 'TESTING_KEY'
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'HOST': '127.0.0.1',
+            'PORT': 3306,
+            'NAME': 'waffle_backend_2',
+            'USER': 'waffle-backend',
+            'PASSWORD': 'seminar',
+        }
+    }
+
 # You should clarify which field type to use when auto-creating primary keys; Since Django 3.2
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
@@ -152,8 +168,6 @@ REST_FRAMEWORK = {
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
     ),
 }
-
-# 밑은 인증 구현을 위한 기반
 
 # 아래는 JWT 모듈 설정입니다.
 # 이번 과제에서 사용하는 djangorestframework-jwt 라이브러리는 deprecated 되었습니다..만,
