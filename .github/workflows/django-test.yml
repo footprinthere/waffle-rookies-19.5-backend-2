@@ -46,9 +46,8 @@ jobs:
       run: |
         mysql --version
         mysql --host 127.0.0.1 --port 3306 -uroot -proot -e "SHOW DATABASES"
-        mysql --host 127.0.0.1 --port 3306 -uroot -proot -e "GRANT ALL PRIVILEGES ON `test_waffle_backend_2`.* TO `waffle-backend`@`%`"
+        mysql --host 127.0.0.1 --port 3306 -uroot -proot -e "GRANT ALL PRIVILEGES ON test_waffle_backend_2.* TO 'waffle-backend'@'%'"
         mysql --host 127.0.0.1 --port 3306 -uroot -proot -e "FLUSH PRIVILEGES"
-        mysql --host 127.0.0.1 --port 3306 -uroot -proot -e "SHOW GRANTS FOR `waffle-backend`@`%`"
 
     - name: Run Tests
       run: python manage.py test
