@@ -1,3 +1,10 @@
+
+# 여전히 mysql socket 에러
+# main에 있는 requirements.txt 수정해야 할듯
+
+
+
+
 name: Django CI
 
 # action을 실행할 조건
@@ -8,7 +15,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
     strategy:
@@ -20,12 +27,13 @@ jobs:
       mysql:
         image: mysql:5.7
         env:
-          MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: 'waffle_backend_2'
           MYSQL_USER: 'waffle-backend'
           MYSQL_PASSWORD: 'seminar'
-        ports:
+          MYSQL_ROOT_PASSWORD: root
+        ports: 
           - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
     - uses: actions/checkout@v2
@@ -39,6 +47,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r waffle_backend/requirements.txt
+
+    - name: Start MySQL Service
+      run: |
+        mysql --version
+        sudo systemctl start mysql
+        mysql -uroot
 
     - name: Run Tests
       run: python manage.py test
