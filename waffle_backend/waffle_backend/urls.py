@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include('survey.urls')),
     path('api/v1/', include('user.urls')),
+    path('api/v1/', include('seminar.urls')),
 ]
 
 if settings.DEBUG_TOOLBAR:
